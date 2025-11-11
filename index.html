@@ -1,26 +1,176 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <title>영어 단어 퀴즈</title>
-    <link rel="stylesheet" href="./style.css"> </head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>일대일양육 암송구절</title>
+    <style>
+      body {
+        font-family: "Noto Sans KR", sans-serif;
+        background: #f6f6f6;
+        padding: 30px;
+      }
+      h1 {
+        margin-bottom: 20px;
+      }
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .nav-btn {
+        padding: 6px 15px;
+        background-color: #ddd;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background 0.2s;
+      }
+      .nav-btn.active,
+      .nav-btn:hover {
+        background-color: #0084ff;
+        color: #fff;
+      }
+      .verse-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 25px;
+      }
+      .verse-label {
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+      }
+      textarea {
+        width: 100%;
+        height: 100px;
+        padding: 10px;
+        font-size: 1rem;
+        margin-bottom: 10px;
+        line-height: 1.4;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 1rem;
+        background: #0084ff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #006edc;
+      }
+      .result {
+        margin-top: 10px;
+        white-space: pre-wrap;
+        font-size: 1rem;
+      }
+      .diff {
+        background-color: #ffcccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="nav" class="nav"></div>
+    <div id="practice-area"></div>
 
-    <div class="quiz-container">
-        <h2>영단어 맞추기 💡</h2>
-        <p>아래 뜻에 해당하는 영어 단어를 입력하세요.</p>
-        
-        <div id="word-display" class="word-card">
-            <p id="korean-meaning"></p>
-        </div>
+    <script>
+      const verses = [
+        { ref: "갈2:20", text: "내가 그리스도와 함께 십자가에 못 박혔나니 그런즉 이제는 내가 사는 것이 아니요 오직 내 안에 그리스도께서 사시는 것이라 이제 내가 육체 가운데 사는 것은 나를 사랑하사 나를 위하여 자기 자신을 버리신 하나님의 아들을 믿는 믿음 안에서 사는 것이라", cat: "만남 | 중심 되신 그리스도" },
+        { ref: "요15:5", text: "나는 포도나무요 너희는 가지라 그가 내 안에 내가 그 안에 거하면 사람이 열매를 많이 맺나니 나를 떠나서는 너희가 아무 것도 할 수 없음이라", cat: "만남 | 중심 되신 그리스도" },
+        { ref: "사53:5", text: "그가 찔림은 우리의 허물 때문이요 그가 상함은 우리의 죄악 때문이라 그가 징계를 받으므로 우리는 평화를 누리고 그가 채찍에 맞으므로 우리는 나음을 받았도다  ", cat: "만남 | 중심 되신 그리스도" },
+        { ref: "사53:6", text: "우리는 다 양 같아서 그릇 행하여 각기 제 길로 갔거늘 여호와께서는 우리 모두의 죄악을 그에게 담당시키셨도다", cat: "만남 | 중심 되신 그리스도" },
+        { ref: "롬6:4", text: "그러므로 우리가 그의 죽으심과 합하여 세례를 받음으로 그와 함께 장사되었나니 이는 아버지의 영광으로 말미암아 그리스도를 죽은 자 가운데서 살리심과 같이 우리로 또한 새 생명 가운데서 행하게 하려 함이라", cat: "만남 | 중심 되신 그리스도" },
+        { ref: "엡1:22", text: "또 만물을 그의 발 아래에 복종하게 하시고 그를 만물 위에 교회의 머리로 삼으셨느니라  ", cat: "만남 | 중심 되신 그리스도" },
+        { ref: "요1:12", text: "영접하는 자 곧 그 이름을 믿는 자들에게는 하나님의 자녀가 되는 권세를 주셨으니  ", cat: "만남 | 중심 되신 그리스도" },
+        { ref: "요3:16", text: "하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니 이는 그를 믿는 자마다 멸망하지 않고 영생을 얻게 하려 하심이라", cat: "만남 | 중심 되신 그리스도" },
+        { ref: "히4:15", text: "우리에게 있는 대제사장은 우리의 연약함을 동정하지 못하실 이가 아니요 모든 일에 우리와 똑같이 시험을 받으신 이로되 죄는 없으시니라", cat: "만남 | 중심 되신 그리스도" },
+        { ref: "요일5:13", text: "내가 하나님의 아들의 이름을 믿는 너희에게 이것을 쓰는 것은 너희로 하여금 너희에게 영생이 있음을 알게 하려 함이라", cat: "성장: 첫 번째 만남 | 구원의 확신" },
+        { ref: "요5:24", text: "내가 진실로 진실로 너희에게 이르노니 내 말을 듣고 또 나 보내신 이를 믿는 자는 영생을 얻었고 심판에 이르지 아니하나니 사망에서 생명으로 옮겼느니라", cat: "성장: 첫 번째 만남 | 구원의 확신" },
+        { ref: "대상29:11-12", text: "여호와여 위대하심과 권능과 영광과 승리와 위엄이 다 주께 속하였사오니 천지에 있는 것이 다 주의 것이로소이다 여호와여 주권도 주께 속하였사오니 주는 높으사 만물의 머리이심이니이다 부와 귀가 주께로 말미암고 또 주는 만물의 주재가 되사 손에 권세와 능력이 있사오니 모든 사람을 크게 하심과 강하게 하심이 주의 손에 있나이다", cat: "성장: 두 번째 만남 | 하나님의 속성" },
+        { ref: "시36:5-6", text: "여호와여 주의 인자하심이 하늘에 있고 주의 진실하심이 공중에 사무쳤으며 주의 의는 하나님의 산들과 같고 주의 심판은 큰 바다와 같으니이다 여호와여 주는 사람과 짐승을 구하여 주시나이다", cat: "성장: 두 번째 만남 | 하나님의 속성" },
+        { ref: "딤후3:16", text: "모든 성경은 하나님의 감동으로 된 것으로 교훈과 책망과 바르게 함과 의로 교육하기에 유익하니", cat: "성장: 세 번째 만남 | 성경" },
+        { ref: "벧전2:2", text: "갓난 아기들 같이 순전하고 신령한 젖을 사모하라 이는 그로 말미암아 너희로 구원에 이르도록 자라게 하려 함이라", cat: "성장: 세 번째 만남 | 성경" },
+        { ref: "요15:7", text: "너희가 내 안에 거하고 내 말이 너희 안에 거하면 무엇이든지 원하는 대로 구하라 그리하면 이루리라", cat: "성장: 네 번째 만남 | 기도" },
+        { ref: "빌4:6-7", text: "아무 것도 염려하지 말고 다만 모든 일에 기도와 간구로 너희 구할 것을 감사함으로 하나님께 아뢰라 그리하면 모든 지각에 뛰어난 하나님의 평강이 그리스도 예수 안에서 너희 마음과 생각을 지키시리라", cat: "성장: 네 번째 만남 | 기도" },
+        { ref: "롬12:4-5", text: "우리가 한 몸에 많은 지체를 가졌으나 모든 지체가 같은 기능을 가진 것이 아니니 이와 같이 우리 많은 사람이 그리스도 안에서 한 몸이 되어 서로 지체가 되었느니라", cat: "성장: 다섯 번째 만남 | 교제" },
+        { ref: "요13:34-35", text: "새 계명을 너희에게 주노니 서로 사랑하라 내가 너희를 사랑한 것 같이 너희도 서로 사랑하라 너희가 서로 사랑하면 이로써 모든 사람이 너희가 내 제자인 줄 알리라", cat: "성장: 다섯 번째 만남 | 교제" },
+        { ref: "롬1:16", text: "내가 복음을 부끄러워하지 아니하노니 이 복음은 모든 믿는 자에게 구원을 주시는 하나님의 능력이 됨이라 먼저는 유대인에게요 그리고 헬라인에게로다", cat: "성장: 여섯 번째 만남 | 전도" },
+        { ref: "벧전3:15", text: "너희 마음에 그리스도를 주로 삼아 거룩하게 하고 너희 속에 있는 소망에 관한 이유를 묻는 자에게는 대답할 것을 항상 준비하되 온유와 두려움으로 하고", cat: "성장: 여섯 번째 만남 | 전도" },
+        { ref: "엡5:18", text: "술 취하지 말라 이는 방탕한 것이니 오직 성령으로 충만함을 받으라", cat: "성장: 일곱 번째 만남 | 성령 충만한 삶" },
+        { ref: "갈5:22-23", text: "오직 성령의 열매는 사랑과 희락과 화평과 오래 참음과 자비와 양선과 충성과 온유와 절제니 이같은 것을 금지할 법이 없느니라", cat: "성장: 일곱 번째 만남 | 성령 충만한 삶" },
+        { ref: "고전10:13", text: "사람이 감당할 시험 밖에는 너희가 당한 것이 없나니 오직 하나님은 미쁘사 너희가 감당하지 못할 시험 당함을 허락하지 아니하시고 시험 당할 즈음에 또한 피할 길을 내사 너희로 능히 감당하게 하시느니라", cat: "성장: 여덟 번째 만남 | 시험을 이기는 삶" },
+        { ref: "약1:14-15", text: "오직 각 사람이 시험을 받는 것은 자기 욕심에 끌려 미혹됨이니 욕심이 잉태한즉 죄를 낳고 죄가 장성한즉 사망을 낳느니라", cat: "성장: 여덟 번째 만남 | 시험을 이기는 삶" },
+        { ref: "롬12:1", text: "그러므로 형제들아 내가 하나님의 모든 자비하심으로 너희를 권하노니 너희 몸을 하나님이 기뻐하시는 거룩한 산 제물로 드리라 이는 너희가 드릴 영적 예배니라", cat: "성장: 아홉 번째 만남 | 순종하는 삶" },
+        { ref: "눅9:23", text: "또 무리에게 이르시되 아무든지 나를 따라오려거든 자기를 부인하고 날마다 제 십자가를 지고 나를 따를 것이니라", cat: "성장: 아홉 번째 만남 | 순종하는 삶" },
+        { ref: "벧전2:9", text: "그러나 너희는 택하신 족속이요 왕 같은 제사장들이요 거룩한 나라요 그의 소유가 된 백성이니 이는 너희를 어두운 데서 불러 내어 그의 기이한 빛에 들어가게 하신 이의 아름다운 덕을 선포하게 하려 하심이라", cat: "성장: 열 번째 만남 | 사역하는 삶" },
+        { ref: "고전3:9", text: "우리는 하나님의 동역자들이요 너희는 하나님의 밭이요 하나님의 집이니라", cat: "성장: 열 번째 만남 | 사역하는 삶" },
+      ];
 
-        <input type="text" id="english-input" placeholder="여기에 영어 단어를 입력하세요">
-        <button onclick="checkAnswer()">정답 확인</button>
-        
-        <p id="feedback-message" class="feedback"></p>
+      // 중복 없는 카테고리 목록 추출
+      const categories = [...new Set(verses.map((v) => v.cat))];
 
-        <button onclick="nextWord()" id="next-button" style="display:none;">다음 단어</button>
-    </div>
+      let currentCategory = categories[0];
 
-    <script src="./script.js"></script> </body>
+      function renderNav() {
+        const nav = document.getElementById("nav");
+        nav.innerHTML = "";
+        categories.forEach((cat) => {
+          const btn = document.createElement("button");
+          btn.textContent = cat;
+          btn.className = "nav-btn" + (cat === currentCategory ? " active" : "");
+          btn.onclick = () => {
+            currentCategory = cat;
+            renderNav();
+            renderVerses();
+          };
+          nav.appendChild(btn);
+        });
+      }
+
+      function renderVerses() {
+        const area = document.getElementById("practice-area");
+        area.innerHTML = "";
+        // 현재 선택된 카테고리만 표시
+        verses
+          .filter((v) => v.cat === currentCategory)
+          .forEach((v, i) => {
+            const div = document.createElement("div");
+            div.className = "verse-container";
+            div.innerHTML = `
+          <div class="verse-label">${v.ref}</div>
+          <textarea id="input-${v.ref}" placeholder="직접 입력해보세요..."></textarea>
+          <button onclick="checkVerse('${v.ref}', \`${v.text}\`)">확인</button>
+          <div id="result-${v.ref}" class="result"></div>
+        `;
+            area.appendChild(div);
+          });
+      }
+
+      // 띄어쓰기 무시 문자 비교
+      function checkVerse(ref, originalText) {
+        const original = originalText.replace(/\s+/g, ""); // 공백 제거
+        const userInput = document.getElementById(`input-${ref}`).value.replace(/\s+/g, "");
+        const resultDiv = document.getElementById(`result-${ref}`);
+        let result = "";
+        const maxLen = Math.max(original.length, userInput.length);
+        for (let i = 0; i < maxLen; i++) {
+          if (original[i] !== userInput[i]) {
+            // 틀리거나 더 짧게 썼을 때
+            result += `<span class="diff">${userInput[i] || ""}</span>`;
+          } else {
+            result += userInput[i] || "";
+          }
+        }
+        resultDiv.innerHTML = result || "<span style='color:#999;'>입력 내용이 없습니다.</span>";
+      }
+
+      renderNav();
+      renderVerses();
+    </script>
+  </body>
 </html>
