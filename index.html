@@ -70,13 +70,28 @@
         flex-direction: column;
       }
       .verse-label {
-        font-weight: bold;
         font-size: 2rem;
         margin-bottom: 10px;
       }
+      .status {
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
+      }
+      .verse-label button {
+        font-size: 1.8rem;
+        padding: 10px 0;
+      }
+      .status.correct {
+        color: green;
+      }
+      .status.wrong {
+        color: red;
+      }
+
       textarea {
         width: 100%;
-        flex: 1; /* 가용 공간 채우기 */
+        flex: 1;
         font-size: 2rem;
         padding: 12px;
         line-height: 1.6;
@@ -104,18 +119,6 @@
       button:hover {
         background: #006edc;
       }
-      .result-status {
-        font-size: 2rem;
-        font-weight: bold;
-        margin-left: 10px;
-        align-self: center;
-      }
-      .result-status.correct {
-        color: green;
-      }
-      .result-status.wrong {
-        color: red;
-      }
       .result,
       .original-text {
         font-size: 1.8rem;
@@ -125,6 +128,7 @@
       .diff {
         background-color: #ffcccc;
       }
+
       @media (max-width: 600px) {
         h1 {
           font-size: 2.4rem;
@@ -140,6 +144,9 @@
         .verse-label {
           font-size: 2.2rem;
         }
+        .status {
+          font-size: 2rem;
+        }
         textarea {
           font-size: 2.2rem;
         }
@@ -150,9 +157,6 @@
         .result,
         .original-text {
           font-size: 2rem;
-        }
-        .result-status {
-          font-size: 2.2rem;
         }
       }
     </style>
@@ -244,15 +248,16 @@
         if (!verse) return;
 
         area.innerHTML = `
-    <div class="verse-label">${verse.ref}</div>
-    <textarea id="input-${verse.ref}" placeholder="직접 입력해보세요..."></textarea>
-    <div class="button-group">
-      <button id="btn-${verse.ref}">확인</button>
-      <button id="clean-${verse.ref}">초기화</button>
-      <span id="status-${verse.ref}" class="result-status"></span>
-    </div>
-    <div id="result-${verse.ref}" class="result"></div>
-    <div id="original-${verse.ref}" class="original-text" style="display:none;"></div>
+  <div class="verse-label" style="display:flex; width:100%; gap:5px; align-items:center;">
+    <span class="ref-text" style="flex:1; text-align:left;">${verse.ref}</span>
+    <span style="flex:1;"></span> <!-- 빈칸 -->
+    <span id="status-${verse.ref}" class="status" style="flex:1; text-align:center;"></span>
+    <button id="btn-${verse.ref}" style="flex:1;">확인</button>
+    <button id="clean-${verse.ref}" style="flex:1;">초기화</button>
+  </div>
+  <textarea id="input-${verse.ref}" placeholder="직접 입력해보세요..."></textarea>
+  <div id="result-${verse.ref}" class="result"></div>
+  <div id="original-${verse.ref}" class="original-text" style="display:none;"></div>
   `;
 
         const textarea = document.getElementById(`input-${verse.ref}`);
@@ -292,13 +297,13 @@
 
         if (userInput === original && userInput.length > 0) {
           statusSpan.textContent = "정답 ✅";
-          statusSpan.className = "result-status correct";
+          statusSpan.className = "status correct";
         } else if (userInput.length > 0) {
           statusSpan.textContent = "오답 ❌";
-          statusSpan.className = "result-status wrong";
+          statusSpan.className = "status wrong";
         } else {
           statusSpan.textContent = "";
-          statusSpan.className = "result-status";
+          statusSpan.className = "status";
         }
       }
 
