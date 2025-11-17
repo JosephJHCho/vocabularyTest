@@ -1,1 +1,1 @@
-"# vocabularyTest" 
+# skdc 일대일양육 암송구절
